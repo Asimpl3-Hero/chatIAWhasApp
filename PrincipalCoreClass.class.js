@@ -89,7 +89,7 @@ class PrincipalCoreClass extends CoreClass {
           return;
         }
 
-       let user = await this.searchOrCreateUserByPhone(from)
+       let user = await searchOrCreateUserByPhone(from)
 
         console.log(from)
         console.log(body)
@@ -103,10 +103,9 @@ class PrincipalCoreClass extends CoreClass {
             "poeToken":user.poeToken||null,
         }
 
-        let iscommandVar = await this.isCommand( body.toLowerCase(), from, FromBody)
-        console.log(iscommandVar)
-        if(! iscommandVar){
-          let reply = await this.sendIAMessageToApi(IA_HOTS,FromBody)
+    
+        if(! await this.isCommand( body.toLowerCase(), from, FromBody)){
+          let reply = await sendIAMessageToApi(IA_HOTS,FromBody)
           if(reply.success){
               console.log(reply.data.message)
             return this.sendFlowSimple([{answer: reply.data.message.trim()}],from );
@@ -123,67 +122,62 @@ class PrincipalCoreClass extends CoreClass {
 
     };
 
-    async sendIAMessageToApi(host, body,action = 'send') {
-
-        console.log(action)
-
-        try {
-          const response = await axios.post(`${host}/${action}`, body);
-
-          return response.data;
-      
-        } catch (error) {
-          // throw error;
-        }
-    }
-
     async isCommand(body,from,FromBody) {
 
       let comando = false;
-
+      
       console.log(body.charAt(0))
-
+      
       if( body.charAt(0) == "/" ){
-
+      
         let command = body.split("=")
-
+      
         console.log(command)
-
+      
         switch ( command[0] ) {
           case "/bot":
-  
+      
             if(command[1] != null){
-
-              await this.editUser(from, {
+      
+              await editUser(from, {
                 bot:command[1]
               });
               this.sendFlowSimple([{answer: "Bot switched."}], from);
-              comando = true 
             
+            }else{
+
+              
+              this.sendFlowSimple([{answer: FromBody.bot}], from);
+
             }
-            
+            comando = true 
             break;
-
+      
           case "/token":
-  
+      
             if(command[1] != null){
-
-              await this.editUser(from, {
+      
+              await editUser(from, {
                 poeToken:command[1]
               });
-
+      
               this.sendFlowSimple([{answer: "Token replaced."}], from);
-              comando = true 
-            
+              
+            }else{
+              this.sendFlowSimple([{answer: FromBody.poeToken||"Token generico."}], from);
+              
             }
             
+            
+            comando = true 
+            
             break;
-
+      
           case "/bots":
-  
-
-            let reply = await this.sendIAMessageToApi(IA_HOTS,FromBody,'bot-list')
-
+      
+      
+            let reply = await sendIAMessageToApi(IA_HOTS,FromBody,'bot-list')
+      
             let bots = "";
             let originalObj = reply.data.message
             let invertedObj = {}
@@ -191,59 +185,76 @@ class PrincipalCoreClass extends CoreClass {
               invertedObj[originalObj[key]] = key;
               bots += `${originalObj[key]} = ${key}\n`
             }
-
-
+      
+      
             this.sendFlowSimple([{answer: bots}], from);
             comando = true 
-
+      
             
             break;
- 
+      
           case "/clear":
-
-            await this.sendIAMessageToApi(IA_HOTS,FromBody,'purge')
+      
+            await sendIAMessageToApi(IA_HOTS,FromBody,'purge')
             this.sendFlowSimple([{answer: "Context clean."}], from);
             comando = true 
-
+      
           break;
       
          
         }
-
+      
         return comando
-
+      
       }
-
+      
       return comando
       
         
-    }
-
-    async editUser(phone, updateData) {
-      const user = await UsersCollection.findOne({ phone });
-      if (user) {
-      await UsersCollection.updateOne({ phone }, { $set: updateData });
       }
-    }
 
-      
-    async searchOrCreateUserByPhone(phone) {
-      const user = await UsersCollection.findOne({ phone });
-      if (!user) {
-      const newUser = {
-      phone
-      };
-      await UsersCollection.insertOne(newUser);
-      return await UsersCollection.findOne({ phone });
-      }
-      return user;
-    }
+   
     
     
     
     
 }
 
+async function sendIAMessageToApi(host, body,action = 'send') {
+
+  console.log(action)
+
+  try {
+    const response = await axios.post(`${host}/${action}`, body);
+
+    return response.data;
+
+  } catch (error) {
+    // throw error;
+  }
+}
+
+
+
+async function editUser(phone, updateData) {
+const user = await UsersCollection.findOne({ phone });
+if (user) {
+await UsersCollection.updateOne({ phone }, { $set: updateData });
+}
+}
+
+
+async function searchOrCreateUserByPhone(phone) {
+const user = await UsersCollection.findOne({ phone });
+if (!user) {
+const newUser = {
+phone
+};
+await UsersCollection.insertOne(newUser);
+return await UsersCollection.findOne({ phone });
+}
+return user;
+}
 
 
 
