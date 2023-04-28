@@ -202,8 +202,7 @@ class PrincipalCoreClass extends CoreClass {
 
           break;
       
-          default:
-            break;
+         
         }
 
         return comando
