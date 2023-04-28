@@ -70,6 +70,11 @@ class PrincipalCoreClass extends CoreClass {
     }
 
     handleMsg = async (ctx) =>  {
+      
+        if(!isReady){
+          return 
+        }
+
 
         const { from, body } = ctx;
 
