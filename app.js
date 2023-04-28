@@ -90,9 +90,9 @@ const main = async () => {
   })
 
   const server = app.listen(port, () => {
-
+    
     console.log(`La aplicación está corriendo en el puerto: ${port}`);
-    // console.log(`Api ready.`)
+
   })
 
   adapterProvider.on('ready', async () => { });
