@@ -10,8 +10,6 @@ const readline = require('readline');
 var redis = require("redis");
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const { Console } = require("console");
-const { Command } = require("selenium-webdriver/lib/command");
 const ObjectID = require('mongodb').ObjectID;
 var isReady = false;
 //Mongo DB
